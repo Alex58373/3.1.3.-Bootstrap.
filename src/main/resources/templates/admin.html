@@ -60,8 +60,7 @@
     <div>
         <label>Роль:</label>
         <div th:each="role : ${roles}">
-            <input type="checkbox" name="selectedRoles" th:value="${role.id}"
-                   th:checked="${role.name == 'ROLE_USER'}"/>
+            <input type="checkbox" name="selectedRoles" th:value="${role.id}"/>
             <span th:text="${role.name}"></span>
         </div>
     </div>

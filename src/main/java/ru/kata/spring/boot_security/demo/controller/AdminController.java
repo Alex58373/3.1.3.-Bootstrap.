@@ -5,7 +5,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
@@ -46,19 +45,6 @@ public class AdminController {
         if (roleIds == null) {
             roleIds = new HashSet<>();
         }
-        Set<Role> allRoles = userService.getAllRoles();
-        Integer userRoleId = null;
-        for (Role role : allRoles) {
-            if ("ROLE_USER".equals(role.getName())) {
-                userRoleId = role.getId();
-                break;
-            }
-        }
-
-        if (userRoleId != null && !roleIds.contains(userRoleId)) {
-            roleIds.add(userRoleId);
-        }
-
         userService.saveUserWithRoles(user, roleIds);
         return "redirect:/admin";
     }

@@ -10,6 +10,7 @@ import ru.kata.spring.boot_security.demo.model.User;
 
 import javax.transaction.Transactional;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Component
@@ -27,20 +28,41 @@ public class DataInit implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        if (userDao.listUsers().isEmpty()) {
-            System.out.println("=== CREATING INITIAL DATA ===");
+        System.out.println("=== CHECKING INITIAL DATA ===");
 
+        // Проверяем наличие ролей
+        List<Role> existingRoles = userDao.listRoles();
 
-            Role roleUser = new Role("ROLE_USER");
-            Role roleAdmin = new Role("ROLE_ADMIN");
+        // Создаем роли, если их нет
+        Role roleUser = userDao.findRoleByName("ROLE_USER");
+        Role roleAdmin = userDao.findRoleByName("ROLE_ADMIN");
 
+        if (roleUser == null) {
+            System.out.println("Creating ROLE_USER...");
+            roleUser = new Role("ROLE_USER");
             userDao.addRole(roleUser);
+        } else {
+            System.out.println("ROLE_USER already exists");
+        }
+
+        if (roleAdmin == null) {
+            System.out.println("Creating ROLE_ADMIN...");
+            roleAdmin = new Role("ROLE_ADMIN");
             userDao.addRole(roleAdmin);
+        } else {
+            System.out.println("ROLE_ADMIN already exists");
+        }
 
-            Role savedRoleUser = userDao.findRoleByName("ROLE_USER");
-            Role savedRoleAdmin = userDao.findRoleByName("ROLE_ADMIN");
+        // Получаем обновленные роли (чтобы иметь ID)
+        Role savedRoleUser = userDao.findRoleByName("ROLE_USER");
+        Role savedRoleAdmin = userDao.findRoleByName("ROLE_ADMIN");
 
+        // Проверяем наличие пользователей
+        List<User> existingUsers = userDao.listUsers();
 
+        // Создаем пользователя USER, если его нет
+        if (userDao.findByUsername("user") == null) {
+            System.out.println("Creating user 'user'...");
             Set<Role> userRoles = new HashSet<>();
             userRoles.add(savedRoleUser);
 
@@ -53,6 +75,15 @@ public class DataInit implements CommandLineRunner {
             user.setWork("Программист");
             user.setRoles(userRoles);
 
+            userDao.addUser(user);
+            System.out.println("User 'user' created");
+        } else {
+            System.out.println("User 'user' already exists");
+        }
+
+        // Создаем пользователя ADMIN, если его нет
+        if (userDao.findByUsername("admin") == null) {
+            System.out.println("Creating user 'admin'...");
             Set<Role> adminRoles = new HashSet<>();
             adminRoles.add(savedRoleUser);
             adminRoles.add(savedRoleAdmin);
@@ -66,14 +97,12 @@ public class DataInit implements CommandLineRunner {
             admin.setWork("Менеджер");
             admin.setRoles(adminRoles);
 
-            userDao.addUser(user);
             userDao.addUser(admin);
-
-            System.out.println("=== INITIAL USERS CREATED ===");
-            System.out.println("Username: user, Password: user, Roles: USER");
-            System.out.println("Username: admin, Password: admin, Roles: ADMIN, USER");
+            System.out.println("User 'admin' created");
         } else {
-            System.out.println("=== DATA ALREADY EXISTS ===");
+            System.out.println("User 'admin' already exists");
         }
+
+        System.out.println("=== INITIAL DATA CHECK COMPLETE ===");
     }
 }
