@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit User</title>
+    <meta charset="utf-8">
+</head>
+<body>
+<h2>Редактирование: <span th:text="${user.username}"></span></h2>
+
+<form th:action="@{/admin/update/{id}(id=${user.id})}" th:method="post">
+    <div><label>Никнэйм: <input type="text" th:value="${user.username}" name="username" required/></label></div>
+    <div><label>Пароль: <input type="password" name="password" placeholder="Leave blank to keep current password"/></label></div>
+    <div><label>Имя: <input type="text" th:value="${user.name}" name="name"/></label></div>
+    <div><label>Возраст: <input type="number" th:value="${user.age}" name="age"/></label></div>
+    <div><label>Пол:
+        <select name="gender">
+            <option value="Мужской" th:selected="${user.gender == 'Мужской'}">Мужской</option>
+            <option value="Женский" th:selected="${user.gender == 'Женский'}">Женский</option>
+        </select>
+    </label></div>
+    <div><label>Место работы: <input type="text" th:value="${user.work}" name="work"/></label></div>
+
+    <div>
+        <label>Роль:</label>
+        <div th:each="role : ${allRoles}">
+            <input type="checkbox" name="selectedRoles" th:value="${role.id}"
+                   th:checked="${#lists.contains(user.roles, role)}"/>
+            <span th:text="${role.name}"></span>
+        </div>
+    </div>
+
+    <input type="submit" value="Обновить"/>
+    <a th:href="@{/admin}">
+        <button type="button">Отменить</button>
+    </a>
+</form>
+</body>
+</html>

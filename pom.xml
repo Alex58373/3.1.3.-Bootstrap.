@@ -24,6 +24,12 @@
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
 
+        <!--springsecurity5-->
+        <dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity5</artifactId>
+        </dependency>
+
         <!--starter-web-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -48,7 +54,6 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
-
 		</dependency>
 
         <!--starter-data-jpa-->

@@ -1,11 +1,27 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
 <head>
-    <title>Spring Security Example</title>
+    <title>User Info</title>
+    <meta charset="utf-8">
 </head>
 <body>
-<h1>User, welcome spring boot security page!</h1>
+<h2>Информация о пользователе</h2>
+<p><strong>Никнейм:</strong> <span th:text="${user.username}"></span></p>
+<p><strong>Имя:</strong> <span th:text="${user.name}"></span></p>
+<p><strong>Возраст:</strong> <span th:text="${user.age}"></span></p>
+<p><strong>Пол:</strong> <span th:text="${user.gender}"></span></p>
+<p><strong>Место работы:</strong> <span th:text="${user.work}"></span></p>
+<p><strong>Роль:</strong> <span th:text="${user.getRolesAsString()}"></span></p>
 
 
+<form th:action="@{/logout}" method="post">
+    <input type="submit" value="Выход"/>
+</form>
+
+<div sec:authorize="hasRole('ROLE_ADMIN')">
+    <a th:href="@{/admin}">Перейти на панель администратора</a>
+</div>
 </body>
 </html>

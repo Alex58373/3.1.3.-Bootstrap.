@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>П А</title>
+    <meta charset="utf-8">
+</head>
+<body>
+<h2>Панель Администратора</h2>
+<p>Текущий пользователь: <span th:text="${currentUser.username}"></span></p>
+
+<h3>Все пользователи</h3>
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Никнейм</th>
+        <th>Имя</th>
+        <th>Возраст</th>
+        <th>Пол</th>
+        <th>Место работы</th>
+        <th>Роль</th>
+        <th>Опции</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="user : ${users}">
+        <td th:text="${user.id}"></td>
+        <td th:text="${user.username}"></td>
+        <td th:text="${user.name}"></td>
+        <td th:text="${user.age}"></td>
+        <td th:text="${user.gender}"></td>
+        <td th:text="${user.work}"></td>
+        <td th:text="${user.getRolesAsString()}"></td>
+        <td>
+            <a th:href="@{'/admin/edit/' + ${user.id}}">
+                <button>Редактировать</button>
+            </a>
+            <form th:action="@{'/admin/delete/' + ${user.id}}" method="post" style="display: inline;">
+                <input type="submit" value="Удалить" onclick="return confirm('Вы точно хотите УДАЛИТЬ пользователя?')"/>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<h3>Добавить нового пользователя</h3>
+<form th:action="@{/admin/create}" method="post" th:object="${newUser}">
+    <div><label>Никнейм: <input type="text" th:field="*{username}" required/></label></div>
+    <div><label>Пароль: <input type="password" th:field="*{password}" required/></label></div>
+    <div><label>Имя: <input type="text" th:field="*{name}"/></label></div>
+    <div><label>Возраст: <input type="number" th:field="*{age}"/></label></div>
+    <div><label>Пол:
+        <select th:field="*{gender}">
+            <option value="">Выберите пол</option>
+            <option value="Мужской">Мужской</option>
+            <option value="Женский">Женский</option>
+        </select>
+    </label></div>
+    <div><label>Место работы: <input type="text" th:field="*{work}"/></label></div>
+    <div>
+        <label>Роль:</label>
+        <div th:each="role : ${roles}">
+            <input type="checkbox" name="selectedRoles" th:value="${role.id}"
+                   th:checked="${role.name == 'ROLE_USER'}"/>
+            <span th:text="${role.name}"></span>
+        </div>
+    </div>
+    <input type="submit" value="Создать"/>
+</form>
+
+<form th:action="@{/logout}" method="post">
+    <input type="submit" value="Выход"/>
+</form>
+
+<br/>
+<a th:href="@{/user}">Перейти на свой профиль</a>
+</body>
+</html>
