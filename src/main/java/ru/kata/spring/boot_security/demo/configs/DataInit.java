@@ -30,18 +30,17 @@ public class DataInit implements CommandLineRunner {
         if (userDao.listUsers().isEmpty()) {
             System.out.println("=== CREATING INITIAL DATA ===");
 
-            // Создаем роли
+
             Role roleUser = new Role("ROLE_USER");
             Role roleAdmin = new Role("ROLE_ADMIN");
 
             userDao.addRole(roleUser);
             userDao.addRole(roleAdmin);
 
-            // Получаем сохраненные роли (чтобы получить ID)
             Role savedRoleUser = userDao.findRoleByName("ROLE_USER");
             Role savedRoleAdmin = userDao.findRoleByName("ROLE_ADMIN");
 
-            // Пользователь USER
+
             Set<Role> userRoles = new HashSet<>();
             userRoles.add(savedRoleUser);
 
