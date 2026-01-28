@@ -8,15 +8,23 @@ import java.util.Set;
 
 public interface UserDao {
     void addUser(User user);
+
     List<User> listUsers();
+
     User getUserById(int id);
+
     void deleteUserById(int id);
+
     User findByUsername(String username);
 
 
     void addRole(Role role);
+
     List<Role> listRoles();
+
     Role findRoleById(Integer id);
+
     Role findRoleByName(String name);
+
     Set<Role> getAllRoles();
 }

@@ -16,7 +16,8 @@ public class Role implements GrantedAuthority {
     @Column(name = "name", unique = true, nullable = false)
     private String name;
 
-    public Role() {}
+    public Role() {
+    }
 
     public Role(String name) {
         this.name = name;
