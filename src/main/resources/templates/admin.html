@@ -1,77 +1,393 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>П А</title>
-    <meta charset="utf-8">
-</head>
-<body>
-<h2>Панель Администратора</h2>
-<p>Текущий пользователь: <span th:text="${currentUser.username}"></span></p>
-
-<h3>Все пользователи</h3>
-<table border="1">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Никнейм</th>
-        <th>Имя</th>
-        <th>Возраст</th>
-        <th>Пол</th>
-        <th>Место работы</th>
-        <th>Роль</th>
-        <th>Опции</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="user : ${users}">
-        <td th:text="${user.id}"></td>
-        <td th:text="${user.username}"></td>
-        <td th:text="${user.name}"></td>
-        <td th:text="${user.age}"></td>
-        <td th:text="${user.gender}"></td>
-        <td th:text="${user.work}"></td>
-        <td th:text="${user.getRolesAsString()}"></td>
-        <td>
-            <a th:href="@{'/admin/edit/' + ${user.id}}">
-                <button>Редактировать</button>
-            </a>
-            <form th:action="@{'/admin/delete/' + ${user.id}}" method="post" style="display: inline;">
-                <input type="submit" value="Удалить" onclick="return confirm('Вы точно хотите УДАЛИТЬ пользователя?')"/>
+    <!DOCTYPE html>
+    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Admin Panel</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+                background-color: #f8f9fa;
+            }
+            .top-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px 30px;
+                background-color: #6c757d;
+                color: white;
+                width: 100%;
+                box-sizing: border-box;
+                z-index: 1000;
+                position: relative;
+            }
+            .logout-button {
+                background: none;
+                border: none;
+                color: #adb5bd;
+                cursor: pointer;
+                font-size: 1rem;
+                padding: 0;
+                margin: 0;
+                text-decoration: none;
+            }
+            .logout-button:hover {
+                color: #ced4da;
+            }
+            .main-container {
+                display: flex;
+                flex: 1;
+            }
+            .sidebar {
+                width: 220px;
+                background-color: white;
+                border-right: 1px solid #dee2e6;
+                padding: 30px 0;
+                min-height: calc(100vh - 70px);
+                box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-item {
+                margin: 0;
+                width: 100%;
+            }
+            .nav-link {
+                color: #0d6efd;
+                text-decoration: none;
+                display: block;
+                padding: 12px 25px;
+                border-radius: 8px;
+                transition: all 0.2s;
+                font-weight: 500;
+                text-align: left;
+                font-size: 1rem;
+                border: none;
+                width: 100%;
+                box-sizing: border-box;
+                background-color: transparent;
+                margin: 2px 0;
+            }
+            .nav-link:hover {
+                background-color: #f8f9fa;
+            }
+            .nav-link.active {
+                background-color: #0d6efd;
+                color: white;
+            }
+            .content-area {
+                flex: 1;
+                padding: 30px;
+                overflow-y: auto;
+            }
+            .section-tabs {
+                display: flex;
+                gap: 2px;
+                margin-bottom: 0;
+                position: relative;
+            }
+            .tab-button {
+                background: none;
+                border: 1px solid transparent;
+                padding: 10px 20px;
+                font-size: 1.1rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s;
+                border-radius: 4px 4px 0 0;
+                text-decoration: none;
+                color: #495057;
+                position: relative;
+                z-index: 2;
+            }
+            .tab-button:hover {
+                color: #0d6efd;
+            }
+            .tab-button.active {
+                color: #495057;
+                background-color: white;
+                border-color: #dee2e6;
+                border-bottom-color: white;
+            }
+            .tab-button:not(.active) {
+                color: #0d6efd;
+                border-color: transparent;
+                margin-bottom: 1px;
+            }
+            .tabs-bottom-border {
+                position: absolute;
+                bottom: -1px;
+                left: 0;
+                width: 100%;
+                height: 1px;
+                background-color: #dee2e6;
+                z-index: 1;
+            }
+            .users-section {
+                background-color: white;
+                border-radius: 0 5px 5px 5px;
+                border: 1px solid #dee2e6;
+                border-top: none;
+            }
+            .table-top-area {
+                background-color: #f8f9fa;
+                padding: 15px 20px 10px 20px;
+                border-bottom: 1px solid #dee2e6;
+            }
+            .table-data-area {
+                padding: 0 20px 20px 20px;
+            }
+            .users-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .users-table th {
+                background-color: white;
+                padding: 12px 15px;
+                text-align: left;
+                font-weight: 600;
+                border-bottom: 1px solid white;
+            }
+            .users-table td {
+                padding: 12px 15px;
+                border-bottom: 1px solid #dee2e6;
+            }
+            .users-table tr:last-child td {
+                border-bottom: none;
+            }
+            .users-table tr:hover {
+                background-color: #f8f9fa;
+            }
+            .role-text:not(:last-child)::after {
+                content: ", ";
+            }
+            .btn-edit {
+                background-color: #20c997;
+                color: white;
+                border: 1px solid #20c997;
+                padding: 3px 10px;
+                font-size: 0.85rem;
+                border-radius: 4px;
+                text-decoration: none;
+                display: inline-block;
+                transition: all 0.2s;
+            }
+            .btn-edit:hover {
+                background-color: #1ba87e;
+                border-color: #1ba87e;
+                color: white;
+            }
+            .btn-delete {
+                background-color: #dc3545;
+                color: white;
+                border: 1px solid #dc3545;
+                padding: 3px 10px;
+                font-size: 0.85rem;
+                border-radius: 4px;
+                text-decoration: none;
+                display: inline-block;
+                transition: all 0.2s;
+                cursor: pointer;
+            }
+            .btn-delete:hover {
+                background-color: #c82333;
+                border-color: #c82333;
+                color: white;
+            }
+            .user-profile {
+                background-color: white;
+                padding: 30px;
+                border-radius: 5px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                border: 1px solid #dee2e6;
+            }
+            .profile-info {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+            }
+            .tab-content {
+                display: none;
+            }
+            .tab-content.active {
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+    <div class="top-header">
+        <div class="text-white">
+            <span th:text="${currentUser.username} ?: 'user'"></span> with roles:
+            <th:block th:each="role, stat : ${currentUser.roles}">
+                <span th:text="${role.name.replace('ROLE_', '')}"></span>
+                <span th:if="${not stat.last}"> </span>
+            </th:block>
+        </div>
+        <div>
+            <form th:action="@{/logout}" method="post" class="d-inline">
+                <button type="submit" class="logout-button">Logout</button>
             </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
-
-<h3>Добавить нового пользователя</h3>
-<form th:action="@{/admin/create}" method="post" th:object="${newUser}">
-    <div><label>Никнейм: <input type="text" th:field="*{username}" required/></label></div>
-    <div><label>Пароль: <input type="password" th:field="*{password}" required/></label></div>
-    <div><label>Имя: <input type="text" th:field="*{name}"/></label></div>
-    <div><label>Возраст: <input type="number" th:field="*{age}"/></label></div>
-    <div><label>Пол:
-        <select th:field="*{gender}">
-            <option value="">Выберите пол</option>
-            <option value="Мужской">Мужской</option>
-            <option value="Женский">Женский</option>
-        </select>
-    </label></div>
-    <div><label>Место работы: <input type="text" th:field="*{work}"/></label></div>
-    <div>
-        <label>Роль:</label>
-        <div th:each="role : ${roles}">
-            <input type="checkbox" name="selectedRoles" th:value="${role.id}"/>
-            <span th:text="${role.name}"></span>
         </div>
     </div>
-    <input type="submit" value="Создать"/>
-</form>
 
-<form th:action="@{/logout}" method="post">
-    <input type="submit" value="Выход"/>
-</form>
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="nav-item">
+                <a th:href="@{/admin}"
+                   class="nav-link"
+                   th:classappend="${#httpServletRequest.requestURI == '/admin' ? 'active' : ''}">Admin</a>
+            </div>
+            <div class="nav-item">
+                <a th:href="@{/user}"
+                   class="nav-link"
+                   th:classappend="${#httpServletRequest.requestURI == '/user' ? 'active' : ''}">User</a>
+            </div>
+        </div>
 
-<br/>
-<a th:href="@{/user}">Перейти на свой профиль</a>
-</body>
-</html>
+        <div class="content-area">
+            <div th:if="${#httpServletRequest.requestURI == '/admin' or #httpServletRequest.requestURI.startsWith('/admin/')}">
+                <div th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                    <div class="mb-4">
+                        <h1 class="h2 mb-3">Admin panel</h1>
+                    </div>
+
+                    <div class="section-tabs">
+                        <button class="tab-button active" id="usersTabButton" data-tab="usersTab">Users table</button>
+                        <a th:href="@{/admin/add-new-user}" class="tab-button">New User</a>
+                        <div class="tabs-bottom-border"></div>
+                    </div>
+
+                    <div class="tab-content active" id="usersTab">
+                        <div class="users-section">
+                            <div class="table-top-area">
+                                <h3 class="h5 mb-0">All users</h3>
+                            </div>
+                            <div class="table-data-area">
+                                <table class="users-table">
+                                    <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Username</th>
+                                        <th>Name</th>
+                                        <th>Age</th>
+                                        <th>Gender</th>
+                                        <th>Work</th>
+                                        <th>Role</th>
+                                        <th>Edit</th>
+                                        <th>Delete</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="user : ${users}">
+                                        <td th:text="${user.id}"></td>
+                                        <td th:text="${user.username}"></td>
+                                        <td th:text="${user.name}"></td>
+                                        <td th:text="${user.age}"></td>
+                                        <td th:text="${user.gender}"></td>
+                                        <td th:text="${user.work}"></td>
+                                        <td>
+                                            <th:block th:each="role, stat : ${user.roles}">
+                                                <span class="role-text" th:text="${role.name.replace('ROLE_', '')}"></span>
+                                            </th:block>
+                                        </td>
+                                        <td><a th:href="@{'/admin/edit/' + ${user.id}}" class="btn-edit">Edit</a></td>
+                                        <td><a th:href="@{'/admin/delete/' + ${user.id}}" class="btn-delete">Delete</a></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:unless="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                        <div class="mb-4">
+                            <h1 class="h2 mb-3">Access Denied</h1>
+                        </div>
+                        <div class="users-section">
+                            <p>You don't have permission to access the admin panel.</p>
+                            <a th:href="@{/user}" class="btn btn-primary">Go to User Profile</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${#httpServletRequest.requestURI == '/user' or #httpServletRequest.requestURI.startsWith('/user/')}">
+                    <div class="mb-4">
+                        <h1 class="h2 mb-3">User Profile</h1>
+                        <p>Current user: <span th:text="${currentUser.username}"></span></p>
+                    </div>
+                    <div class="user-profile">
+                        <div class="profile-info">
+                            <div>
+                                <div class="fw-semibold text-secondary mb-1">ID</div>
+                                <div th:text="${currentUser.id}"></div>
+                            </div>
+                            <div>
+                                <div class="fw-semibold text-secondary mb-1">Username</div>
+                                <div th:text="${currentUser.username}"></div>
+                            </div>
+                            <div>
+                                <div class="fw-semibold text-secondary mb-1">Name</div>
+                                <div th:text="${currentUser.name} ?: 'Not specified'"></div>
+                            </div>
+                            <div>
+                                <div class="fw-semibold text-secondary mb-1">Age</div>
+                                <div th:text="${currentUser.age} ?: 'Not specified'"></div>
+                            </div>
+                            <div>
+                                <div class="fw-semibold text-secondary mb-1">Gender</div>
+                                <div th:text="${currentUser.gender} ?: 'Not specified'"></div>
+                            </div>
+                            <div>
+                                <div class="fw-semibold text-secondary mb-1">Work</div>
+                                <div th:text="${currentUser.work} ?: 'Not specified'"></div>
+                            </div>
+                            <div>
+                                <div class="fw-semibold text-secondary mb-1">Roles</div>
+                                <div>
+                                    <th:block th:each="role, stat : ${currentUser.roles}">
+                                        <span th:text="${role.name.replace('ROLE_', '')}"></span>
+                                        <span th:if="${not stat.last}">, </span>
+                                    </th:block>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <a th:href="@{'/user/edit/' + ${currentUser.id}}" class="btn btn-primary">Edit Profile</a>
+                        </div>
+                        <div class="mt-3">
+                            <a th:href="@{/admin}" class="btn btn-secondary">Back to Admin Panel</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const tabButtons = document.querySelectorAll('.tab-button');
+                const tabContents = document.querySelectorAll('.tab-content');
+                function switchTab(tabId) {
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    tabButtons.forEach(button => button.classList.remove('active'));
+                    document.getElementById(tabId).classList.add('active');
+                    const activeButton = document.querySelector(`[data-tab="${tabId}"]`);
+                    if (activeButton) activeButton.classList.add('active');
+                }
+                tabButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        if (this.hasAttribute('data-tab')) {
+                            switchTab(this.getAttribute('data-tab'));
+                        }
+                    });
+                });
+                switchTab('usersTab');
+            });
+        </script>
+    </body>
+    </html>

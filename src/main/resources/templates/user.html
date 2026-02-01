@@ -1,27 +1,190 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>User Info</title>
+    <title>User Panel</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #6c757d;
+            color: white;
+            width: 100%;
+            box-sizing: border-box;
+            z-index: 1000;
+            position: relative;
+        }
+        .logout-button {
+            background: none;
+            border: none;
+            color: #adb5bd;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0;
+            margin: 0;
+            text-decoration: none;
+        }
+        .logout-button:hover {
+            color: #ced4da;
+        }
+        .main-container {
+            display: flex;
+            flex: 1;
+        }
+        .sidebar {
+            width: 220px;
+            background-color: white;
+            border-right: 1px solid #dee2e6;
+            padding: 30px 0;
+            min-height: calc(100vh - 70px);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .nav-item {
+            margin: 0;
+            width: 100%;
+        }
+        .nav-link {
+            color: #0d6efd;
+            text-decoration: none;
+            display: block;
+            padding: 12px 25px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-weight: 500;
+            text-align: left;
+            font-size: 1rem;
+            border: none;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: transparent;
+            margin: 2px 0;
+        }
+        .nav-link:hover {
+            background-color: #f8f9fa;
+        }
+        .nav-link.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .content-area {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .users-table th {
+            background-color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .users-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .users-table tr:last-child td {
+            border-bottom: none;
+        }
+        .users-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        .role-text:not(:last-child)::after {
+            content: ", ";
+        }
+    </style>
 </head>
 <body>
-<h2>Информация о пользователе</h2>
-<p><strong>Никнейм:</strong> <span th:text="${user.username}"></span></p>
-<p><strong>Имя:</strong> <span th:text="${user.name}"></span></p>
-<p><strong>Возраст:</strong> <span th:text="${user.age}"></span></p>
-<p><strong>Пол:</strong> <span th:text="${user.gender}"></span></p>
-<p><strong>Место работы:</strong> <span th:text="${user.work}"></span></p>
-<p><strong>Роль:</strong> <span th:text="${user.getRolesAsString()}"></span></p>
+<div class="top-header">
+    <div class="text-white">
+        <span th:text="${user.username} ?: 'user'"></span> with roles:
+        <th:block th:each="role, stat : ${user.roles}">
+            <span th:text="${role.name.replace('ROLE_', '')}"></span>
+            <span th:if="${not stat.last}"> </span>
+        </th:block>
+    </div>
+    <div>
+        <form th:action="@{/logout}" method="post" class="d-inline">
+            <button type="submit" class="logout-button">Logout</button>
+        </form>
+    </div>
+</div>
 
+<div class="main-container">
+    <div class="sidebar">
+        <div class="nav-item" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+            <a th:href="@{/admin}"
+               class="nav-link"
+               th:classappend="${#httpServletRequest.requestURI == '/admin' ? 'active' : ''}">Admin</a>
+        </div>
+        <div class="nav-item">
+            <a th:href="@{/user}"
+               class="nav-link"
+               th:classappend="${#httpServletRequest.requestURI == '/user' ? 'active' : ''}">User</a>
+        </div>
+    </div>
 
-<form th:action="@{/logout}" method="post">
-    <input type="submit" value="Выход"/>
-</form>
+    <div class="content-area">
+        <div class="mb-3">
+            <h1 class="h2 mb-3">User information-page</h1>
+        </div>
 
-<div sec:authorize="hasRole('ROLE_ADMIN')">
-    <a th:href="@{/admin}">Перейти на панель администратора</a>
+        <div class="card">
+            <div class="card-header bg-light">
+                <h3 class="h5 mb-0">About user</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="users-table">
+                        <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Work</th>
+                            <th>Role</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td th:text="${user.id}"></td>
+                            <td th:text="${user.username}"></td>
+                            <td th:text="${user.name} ?: 'Not specified'"></td>
+                            <td th:text="${user.age} ?: 'Not specified'"></td>
+                            <td th:text="${user.gender} ?: 'Not specified'"></td>
+                            <td th:text="${user.work} ?: 'Not specified'"></td>
+                            <td>
+                                <th:block th:each="role, stat : ${user.roles}">
+                                    <span class="role-text" th:text="${role.name.replace('ROLE_', '')}"></span>
+                                </th:block>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 </body>
 </html>

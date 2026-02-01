@@ -49,6 +49,14 @@ public class AdminController {
         return "redirect:/admin";
     }
 
+    @GetMapping("/add-new-user")
+    public String addNewUserForm(@AuthenticationPrincipal User currentUser, Model model) {
+        model.addAttribute("currentUser", currentUser);
+        model.addAttribute("roles", userService.getAllRoles());
+        model.addAttribute("newUser", new User());
+        return "add-new-user";
+    }
+
     @PostMapping("/update/{id}")
     public String updateUser(@PathVariable Integer id, @RequestParam("username") String username, @RequestParam(value = "password", required = false) String password,
                              @RequestParam("name") String name, @RequestParam("age") Integer age, @RequestParam("gender") String gender,
@@ -75,5 +83,13 @@ public class AdminController {
     public String deleteUser(@PathVariable Integer id) {
         userService.deleteUserById(id.intValue());
         return "redirect:/admin";
+    }
+
+    @GetMapping("/delete/{id}")
+    public String deleteUserForm(@PathVariable Integer id, Model model) {
+        User user = userService.getUserById(id);
+        model.addAttribute("user", user);
+        model.addAttribute("allRoles", userService.getAllRoles());
+        return "delete-user";
     }
 }
