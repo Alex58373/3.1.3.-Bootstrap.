@@ -7,6 +7,7 @@ import javax.persistence.*;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -34,7 +35,7 @@ public class User implements UserDetails {
     @Column(name = "work")
     private String work;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -143,10 +144,8 @@ public class User implements UserDetails {
     }
 
     public String getRolesAsString() {
-        StringBuilder sb = new StringBuilder();
-        for (Role role : roles) {
-            sb.append(role.toString()).append(" ");
-        }
-        return sb.toString().trim();
+        return roles.stream()
+                .map(Role::toString)
+                .collect(Collectors.joining(" "));
     }
 }

@@ -11,7 +11,7 @@ public interface UserService {
 
     void addUserService(User user);
 
-    User getUserById(int id);
+    User getUserById(Integer id);
 
     void deleteUserById(int id);
 
@@ -24,5 +24,4 @@ public interface UserService {
 
     void updateUserWithRoles(User user, Set<Integer> roleIds);
 
-    User getUserById(Integer id);
 }
