@@ -30,10 +30,10 @@ public class DataInit implements CommandLineRunner {
     public void run(String... args) {
         System.out.println("=== CHECKING INITIAL DATA ===");
 
-        // Проверяем наличие ролей
+
         List<Role> existingRoles = userDao.listRoles();
 
-        // Создаем роли, если их нет
+
         Role roleUser = userDao.findRoleByName("ROLE_USER");
         Role roleAdmin = userDao.findRoleByName("ROLE_ADMIN");
 
@@ -53,14 +53,14 @@ public class DataInit implements CommandLineRunner {
             System.out.println("ROLE_ADMIN already exists");
         }
 
-        // Получаем обновленные роли (чтобы иметь ID)
+
         Role savedRoleUser = userDao.findRoleByName("ROLE_USER");
         Role savedRoleAdmin = userDao.findRoleByName("ROLE_ADMIN");
 
-        // Проверяем наличие пользователей
+
         List<User> existingUsers = userDao.listUsers();
 
-        // Создаем пользователя USER, если его нет
+
         if (userDao.findByUsername("user") == null) {
             System.out.println("Creating user 'user'...");
             Set<Role> userRoles = new HashSet<>();
@@ -81,7 +81,7 @@ public class DataInit implements CommandLineRunner {
             System.out.println("User 'user' already exists");
         }
 
-        // Создаем пользователя ADMIN, если его нет
+
         if (userDao.findByUsername("admin") == null) {
             System.out.println("Creating user 'admin'...");
             Set<Role> adminRoles = new HashSet<>();
